@@ -1,23 +1,31 @@
-# Vintage House
+# Barbearias
 
-Prévia estática responsiva da barbearia, com catálogo multiempresa, área autenticada para cadastro de produtos e preços, convite de clientes por e-mail e solicitação de agendamentos.
+Site responsivo de barbearia com catálogo por slug, autenticação Supabase, área para cadastro de produtos e formulário de agendamento.
 
-## Abrir localmente
+## Arquivos principais
 
-Os módulos JavaScript precisam de HTTP; não abra `outputs/index.html` diretamente via `file://`.
+- `server.js` — servidor HTTP, configuração por ambiente, arquivos estáticos e endpoint de saúde.
+- `package.json` — scripts e versão mínima do Node.js.
+- `public/index.html` — página da barbearia.
+- `public/styles.css` — visual preto e dourado.
+- `public/app.js` — inicializa as funcionalidades da interface.
+- `.env.example` — modelo de configuração local.
+- `outputs/` — módulos existentes da interface, SQL e Edge Function Supabase.
 
-```powershell
-py -m http.server 8000 --directory outputs
+## Executar localmente
+
+Instale Node.js 20 ou superior, copie `.env.example` para `.env` se desejar configurar o Supabase e execute:
+
+```sh
+npm start
 ```
 
-Acesse `http://localhost:8000`. Para usar autenticação, vitrine persistente ou reservas, configure o Supabase seguindo [outputs/SETUP-AUTH.md](outputs/SETUP-AUTH.md).
+Sem `PORT`, o servidor escolhe uma porta livre e informa o endereço no terminal. O endpoint `/healthz` responde com o estado do servidor. Variáveis em `.env` são lidas localmente; no Render configure os valores em **Environment → Environment Variables**.
 
-## O que está preparado
+## Publicação
 
-- Site público em `outputs/`, com serviços, produtos e formulário de agendamento.
-- Link da vitrine selecionado pelo parâmetro `?shop=slug`.
-- Painel do vendedor para convidar uma barbearia; o cliente define a própria senha e administra os produtos e preços.
-- SQL de tabelas, políticas RLS e prevenção de sobreposição de reservas.
-- Configuração Render em `render.yaml`.
+O Render usa `render.yaml` para manter a prévia estática atual e criar em paralelo o novo serviço Node `barbearias`. Após validar a versão Node, a versão estática antiga pode ser removida pelo painel do Render.
 
-O Supabase ainda precisa de credenciais públicas, execução dos SQLs, SMTP e implantação da Edge Function. Loja/pagamentos, notificações, expediente configurável e operações completas de caixa/pedidos não estão implementados.
+Para ativar login, catálogo persistente, convites e agendamentos, preencha `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` e `BARBERSHOP_SLUG`. Siga [outputs/SETUP-AUTH.md](outputs/SETUP-AUTH.md) para executar SQL, configurar Auth/SMTP e implantar a Edge Function. Nunca coloque uma chave `service_role` ou Secret no site.
+
+Loja/pagamentos, notificações e expediente configurável ainda não estão integrados.

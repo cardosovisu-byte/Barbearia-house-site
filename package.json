@@ -1,0 +1,13 @@
+{
+  "name": "barbearias",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site web responsivo e sistema para barbearias",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

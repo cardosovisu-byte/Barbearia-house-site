@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171511">
+  <meta name="description" content="Barbearias — presença online e gestão para sua barbearia.">
+  <title>Barbearias</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="top">
+    <nav class="wrap">
+      <a class="brand" href="#">BARBEARIAS</a>
+      <div class="navlinks"><a href="#servicos">Serviços</a><a href="#agendar">Agendar</a><a href="#loja">Produtos</a><button class="secondary" id="openLogin">Área do cliente</button></div>
+    </nav>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <div class="eyebrow">Tradição em cada detalhe</div>
+        <h1>Seu estilo.<br>Seu tempo.</h1>
+        <p>Uma experiência clássica de barbearia, feita para quem valoriza cuidado, personalidade e bons momentos.</p>
+        <a class="button" href="#agendar">Agendar horário</a>
+      </div>
+    </section>
+    <section id="servicos"><div class="wrap">
+      <div class="eyebrow">Cuidado e precisão</div><h2>Nossos serviços</h2><p class="lead">Consulte os serviços e valores disponíveis.</p>
+      <div class="grid" id="serviceList"><p class="muted">Configure o Supabase para carregar os serviços.</p></div>
+    </div></section>
+    <section id="agendar"><div class="wrap">
+      <div class="eyebrow">Reserve seu momento</div><h2>Agendamento</h2><p class="lead">Escolha um serviço, a data e um horário livre.</p>
+      <form id="bookingForm" class="panel stack">
+        <div class="formgrid">
+          <label>Seu nome<input name="customer_name" autocomplete="name" required maxlength="100"></label>
+          <label>Telefone<input name="customer_phone" autocomplete="tel" required maxlength="30"></label>
+          <label>Serviço<select name="service_id" required><option value="">Selecione um serviço</option></select></label>
+          <label>Data<input name="booking_date" type="date" required></label>
+          <label>Horário disponível<select name="start_time" required><option value="">Selecione serviço e data</option></select></label>
+        </div>
+        <label>Observações (opcional)<textarea name="notes" maxlength="500"></textarea></label>
+        <div class="actions"><button type="submit">Solicitar agendamento</button><span class="notice" id="bookingMessage" role="status"></span></div>
+        <p class="small">O envio registra uma solicitação. A confirmação será combinada diretamente com a barbearia.</p>
+      </form>
+    </div></section>
+    <section id="loja"><div class="wrap">
+      <div class="eyebrow">Escolhas da casa</div><h2>Produtos</h2><p class="lead">Produtos cadastrados pela equipe da barbearia.</p>
+      <div class="grid" id="productList"><p class="muted">Configure o Supabase para carregar os produtos.</p></div>
+      <p class="small">A vitrine é demonstrativa; pedidos e pagamentos ainda não são processados pelo site.</p>
+    </div></section>
+    <section id="clientArea" class="hidden"><div class="wrap">
+      <div class="row"><div><div class="eyebrow">Área da barbearia</div><h2>Gerenciar produtos</h2><p class="lead" id="signedInAs"></p></div><button class="secondary" id="signOut">Sair</button></div>
+      <form id="setPasswordForm" class="panel stack hidden">
+        <h3>Defina sua senha</h3>
+        <p class="small">Crie uma senha pessoal para concluir seu acesso à barbearia.</p>
+        <div class="formgrid">
+          <label>Nova senha<input name="password" type="password" autocomplete="new-password" required minlength="8"></label>
+          <label>Confirme a nova senha<input name="password_confirmation" type="password" autocomplete="new-password" required minlength="8"></label>
+        </div>
+        <div class="actions"><button type="submit">Salvar senha</button><span class="notice" id="passwordMessage" role="status"></span></div>
+      </form>
+      <div class="panel stack">
+        <h3>Cadastrar produto</h3>
+        <form id="productForm" class="formgrid">
+          <input name="product_id" type="hidden">
+          <label>Nome<input name="name" required maxlength="120"></label>
+          <label>Preço (R$)<input name="price" type="number" min="0.01" step="0.01" required></label>
+          <label class="formgrid" style="grid-column:1/-1">Descrição<textarea name="description" maxlength="500"></textarea></label>
+          <div class="actions" style="grid-column:1/-1"><button type="submit" id="saveProduct">Adicionar produto</button><button type="button" class="secondary hidden" id="cancelProductEdit">Cancelar edição</button><span class="notice" id="productMessage" role="status"></span></div>
+        </form>
+      </div>
+      <div class="grid" id="manageProducts"></div>
+      <div id="vendorArea" class="panel stack hidden">
+        <h3>Convidar uma barbearia</h3>
+        <p class="small">Envie um convite seguro. O cliente define a própria senha e gerencia os produtos no link da barbearia.</p>
+        <form id="inviteForm" class="formgrid">
+          <label>Nome da barbearia<input name="name" required maxlength="120"></label>
+          <label>E-mail do cliente<input name="email" type="email" required></label>
+          <label>Identificador do link<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="exemplo-barbearia" required maxlength="80"></label>
+          <div class="actions"><button type="submit">Enviar convite</button></div>
+          <p class="notice" id="inviteMessage" role="status"></p>
+        </form>
+        <p class="small">Link público do cliente: <code id="shopLinkPreview"></code></p>
+      </div>
+      <div class="panel stack">
+        <h3>Agenda</h3>
+        <div id="appointmentList" class="stack"><p class="muted">Entre para consultar os agendamentos.</p></div>
+      </div>
+    </div></section>
+  </main>
+  <footer><div class="wrap row"><span>© Barbearias</span><span>Estilo clássico, cuidado contemporâneo.</span></div></footer>
+  <dialog id="loginDialog">
+    <div class="row"><h2>Acesso da barbearia</h2><button class="secondary" id="closeLogin" aria-label="Fechar">Fechar</button></div>
+    <p class="muted">Entre com a conta que recebeu por convite para cadastrar produtos e preços.</p>
+    <form id="loginForm" class="stack">
+      <label>E-mail<input name="email" type="email" autocomplete="email" required></label>
+      <label>Senha<input name="password" type="password" autocomplete="current-password" required minlength="6"></label>
+      <div class="actions"><button type="submit">Entrar</button><button type="button" class="secondary" id="resetPassword">Esqueci a senha</button></div>
+      <p class="notice" id="authMessage" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
