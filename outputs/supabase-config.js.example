@@ -1,0 +1,3 @@
+export const SUPABASE_URL = "https://SEU-PROJETO.supabase.co";
+export const SUPABASE_PUBLISHABLE_KEY = "SUA_CHAVE_PUBLISHABLE";
+export const BARBERSHOP_SLUG = "vintage-house";
