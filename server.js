@@ -9,8 +9,12 @@ const legacyModules = new Set([
   "auth.js",
   "booking.js",
   "calendar.js",
+  "cash.js",
+  "orders.js",
   "products.js",
+  "services.js",
   "supabase-client.js",
+  "tenant.js",
 ]);
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",

@@ -1,6 +1,6 @@
 # Barbearias
 
-Site responsivo de barbearia com catálogo por slug, autenticação Supabase, área para cadastro de produtos e formulário de agendamento.
+Plataforma responsiva para várias barbearias, com acesso independente por tenant, catálogo público por slug, agenda, serviços, produtos, pedidos e caixa.
 
 ## Arquivos principais
 
@@ -26,6 +26,6 @@ Sem `PORT`, o servidor escolhe uma porta livre e informa o endereço no terminal
 
 O Render usa `render.yaml` para manter a prévia estática atual e criar em paralelo o novo serviço Node `barbearias`. Após validar a versão Node, a versão estática antiga pode ser removida pelo painel do Render.
 
-Para ativar login, catálogo persistente, convites e agendamentos, preencha `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` e `BARBERSHOP_SLUG`. Siga [outputs/SETUP-AUTH.md](outputs/SETUP-AUTH.md) para executar SQL, configurar Auth/SMTP e implantar a Edge Function. Nunca coloque uma chave `service_role` ou Secret no site.
+Para ativar login, catálogo persistente, convites, pedidos, caixa e agendamentos, preencha `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` e `BARBERSHOP_SLUG`. Siga [outputs/SETUP-AUTH.md](outputs/SETUP-AUTH.md) para executar os SQLs, habilitar seu próprio acesso de administrador da plataforma, configurar Auth/SMTP e implantar a Edge Function. Nunca coloque uma chave `service_role` ou Secret no site.
 
-Loja/pagamentos, notificações e expediente configurável ainda não estão integrados.
+Pedidos são lançamentos administrativos manuais; pagamentos/checkout, estoque, notificações e expediente configurável ainda não estão integrados. O painel multi-tenant só fica ativo depois de configurar o Supabase e conceder membership/admin.

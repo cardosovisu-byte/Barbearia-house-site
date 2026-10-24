@@ -1,4 +1,5 @@
 import { configured, supabase } from "./supabase-client.js";
+import { getCurrentMembership, getCurrentShop } from "./tenant.js";
 
 export function initAuth() {
   const dialog = document.querySelector("#loginDialog");
@@ -6,56 +7,99 @@ export function initAuth() {
   const message = document.querySelector("#authMessage");
   const clientArea = document.querySelector("#clientArea");
   const vendorArea = document.querySelector("#vendorArea");
+  const shopAdminArea = document.querySelector("#shopAdminArea");
   const setPasswordForm = document.querySelector("#setPasswordForm");
+  const vendorShopList = document.querySelector("#vendorShopList");
 
   document.querySelector("#openLogin").addEventListener("click", () => dialog.showModal());
   document.querySelector("#closeLogin").addEventListener("click", () => dialog.close());
 
-  const renderSession = (session) => {
+  const renderSession = (session, shop) => {
     clientArea.classList.toggle("hidden", !session);
     document.querySelector("#signedInAs").textContent = session ? session.user.email : "";
+    document.querySelector("#dashboardLabel").textContent = shop ? "Painel da barbearia" : "Painel do administrador";
+    document.querySelector("#dashboardShopName").textContent = shop?.name ?? "Barbearias";
     const linkType = `${window.location.hash}&${window.location.search}`;
     const needsPassword = Boolean(session) && /type=(invite|recovery)/.test(linkType);
     setPasswordForm.classList.toggle("hidden", !needsPassword);
-    window.dispatchEvent(new CustomEvent("auth-state", { detail: { session } }));
+    window.dispatchEvent(new CustomEvent("auth-state", { detail: { session, shop } }));
   };
 
-  const showVendorArea = async (session) => {
-    if (!session) {
+  const loadVendorShops = async () => {
+    const { data, error } = await supabase.from("barbershops")
+      .select("id,name,slug,active")
+      .eq("active", true)
+      .order("name");
+    if (error) throw error;
+    vendorShopList.innerHTML = data.length ? data.map((shop) => {
+      const url = new URL(window.location.pathname, window.location.origin);
+      url.searchParams.set("shop", shop.slug);
+      return `<article class="card"><h3>${escapeText(shop.name)}</h3><p class="small">Acesso por tenant: ${escapeText(shop.slug)}</p><a class="button secondary" href="${escapeAttribute(url)}">Abrir vitrine</a></article>`;
+    }).join("") : '<p class="muted">Nenhuma barbearia ativa cadastrada.</p>';
+  };
+
+  const refresh = async (session) => {
+    if (!session || !configured) {
       vendorArea.classList.add("hidden");
+      shopAdminArea.classList.add("hidden");
+      renderSession(session, null);
       return;
     }
-    const { data, error } = await supabase.from("platform_admins").select("user_id")
-      .eq("user_id", session.user.id).maybeSingle();
-    if (error) throw error;
-    vendorArea.classList.toggle("hidden", !data);
+
+    const shop = await getCurrentShop();
+    const membership = shop ? await getCurrentMembership(session, shop.id) : null;
+    const { data: platformAdmin, error: adminError } = await supabase.from("platform_admins")
+      .select("user_id")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+    if (adminError) throw adminError;
+
+    shopAdminArea.classList.toggle("hidden", !membership);
+    vendorArea.classList.toggle("hidden", !platformAdmin);
+    renderSession(session, membership ? shop : null);
+    if (platformAdmin) await loadVendorShops();
+    if (!membership && !platformAdmin) {
+      message.textContent = "Sua conta ainda não tem acesso. Use o link da barbearia enviado no convite ou fale com o administrador da plataforma.";
+      message.classList.add("error");
+      return;
+    }
+    message.textContent = "";
+    message.classList.remove("error");
   };
 
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!configured) {
-      message.textContent = "A integração ainda não foi configurada. Consulte SETUP-AUTH.md.";
+      message.textContent = "A autenticação não está configurada. Consulte outputs/SETUP-AUTH.md.";
       message.classList.add("error");
       return;
     }
-    const data = new FormData(loginForm);
+    const values = new FormData(loginForm);
     message.textContent = "Acessando...";
     message.classList.remove("error");
     const { error } = await supabase.auth.signInWithPassword({
-      email: data.get("email"),
-      password: data.get("password")
+      email: values.get("email"),
+      password: values.get("password")
     });
     if (error) {
       message.textContent = error.message;
       message.classList.add("error");
       return;
     }
-    message.textContent = "";
     dialog.close();
-    const { data: { session } } = await supabase.auth.getSession();
-    renderSession(session);
-    await showVendorArea(session);
-    clientArea.scrollIntoView({ behavior: "smooth" });
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      message.textContent = `Falha ao abrir a sessão: ${sessionError.message}`;
+      message.classList.add("error");
+      return;
+    }
+    try {
+      await refresh(session);
+      clientArea.scrollIntoView({ behavior: "smooth" });
+    } catch (refreshError) {
+      message.textContent = `Falha ao carregar seu acesso: ${refreshError.message}`;
+      message.classList.add("error");
+    }
   });
 
   document.querySelector("#resetPassword").addEventListener("click", async () => {
@@ -80,11 +124,11 @@ export function initAuth() {
   document.querySelector("#signOut").addEventListener("click", async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      window.alert(`Não foi possível sair: ${error.message}`);
+      message.textContent = `Não foi possível sair: ${error.message}`;
+      message.classList.add("error");
       return;
     }
-    renderSession(null);
-    vendorArea.classList.add("hidden");
+    await refresh(null);
   });
 
   setPasswordForm.addEventListener("submit", async (event) => {
@@ -110,17 +154,11 @@ export function initAuth() {
   });
 
   if (configured) {
-    const refresh = async (session) => {
-      renderSession(session);
-      try {
-        await showVendorArea(session);
-      } catch (error) {
-        message.textContent = `Falha ao verificar permissões: ${error.message}`;
-        message.classList.add("error");
-      }
-    };
     supabase.auth.onAuthStateChange((_event, session) => {
-      window.setTimeout(() => refresh(session), 0);
+      window.setTimeout(() => refresh(session).catch((error) => {
+        message.textContent = `Falha ao atualizar acesso: ${error.message}`;
+        message.classList.add("error");
+      }), 0);
     });
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) throw error;
@@ -156,6 +194,8 @@ export function initAuth() {
     }
     inviteMessage.textContent = data.message;
     event.currentTarget.reset();
+    vendorShopList.replaceChildren();
+    await loadVendorShops();
   });
 
   const slugInput = document.querySelector("#inviteForm").elements.slug;
@@ -163,4 +203,14 @@ export function initAuth() {
     document.querySelector("#shopLinkPreview").textContent =
       `${window.location.origin}${window.location.pathname}?shop=${encodeURIComponent(slugInput.value || "slug-da-barbearia")}`;
   });
+}
+
+function escapeText(value) {
+  const element = document.createElement("span");
+  element.textContent = value ?? "";
+  return element.innerHTML;
+}
+
+function escapeAttribute(value) {
+  return String(value).replaceAll("&", "&amp;").replaceAll("\"", "&quot;").replaceAll("<", "&lt;");
 }

@@ -6,13 +6,13 @@
   <meta name="theme-color" content="#171511">
   <meta name="description" content="Barbearias — presença online e gestão para sua barbearia.">
   <title>Barbearias</title>
-  <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <header class="top">
     <nav class="wrap">
-      <a class="brand" href="#">BARBEARIAS</a>
-      <div class="navlinks"><a href="#servicos">Serviços</a><a href="#agendar">Agendar</a><a href="#loja">Produtos</a><button class="secondary" id="openLogin">Área do cliente</button></div>
+      <a class="brand" id="shopBrand" href="#">BARBEARIAS</a>
+      <div class="navlinks"><a href="#servicos">Serviços</a><a href="#agendar">Agendar</a><a href="#loja">Produtos</a><button class="secondary" id="openLogin">Acessar painel</button></div>
     </nav>
   </header>
   <main>
@@ -49,7 +49,7 @@
       <p class="small">A vitrine é demonstrativa; pedidos e pagamentos ainda não são processados pelo site.</p>
     </div></section>
     <section id="clientArea" class="hidden"><div class="wrap">
-      <div class="row"><div><div class="eyebrow">Área da barbearia</div><h2>Gerenciar produtos</h2><p class="lead" id="signedInAs"></p></div><button class="secondary" id="signOut">Sair</button></div>
+      <div class="row"><div><div class="eyebrow" id="dashboardLabel">Painel administrativo</div><h2 id="dashboardShopName">Sua barbearia</h2><p class="lead" id="signedInAs"></p></div><button class="secondary" id="signOut">Sair</button></div>
       <form id="setPasswordForm" class="panel stack hidden">
         <h3>Defina sua senha</h3>
         <p class="small">Crie uma senha pessoal para concluir seu acesso à barbearia.</p>
@@ -59,17 +59,7 @@
         </div>
         <div class="actions"><button type="submit">Salvar senha</button><span class="notice" id="passwordMessage" role="status"></span></div>
       </form>
-      <div class="panel stack">
-        <h3>Cadastrar produto</h3>
-        <form id="productForm" class="formgrid">
-          <input name="product_id" type="hidden">
-          <label>Nome<input name="name" required maxlength="120"></label>
-          <label>Preço (R$)<input name="price" type="number" min="0.01" step="0.01" required></label>
-          <label class="formgrid" style="grid-column:1/-1">Descrição<textarea name="description" maxlength="500"></textarea></label>
-          <div class="actions" style="grid-column:1/-1"><button type="submit" id="saveProduct">Adicionar produto</button><button type="button" class="secondary hidden" id="cancelProductEdit">Cancelar edição</button><span class="notice" id="productMessage" role="status"></span></div>
-        </form>
-      </div>
-      <div class="grid" id="manageProducts"></div>
+
       <div id="vendorArea" class="panel stack hidden">
         <h3>Convidar uma barbearia</h3>
         <p class="small">Envie um convite seguro. O cliente define a própria senha e gerencia os produtos no link da barbearia.</p>
@@ -81,17 +71,95 @@
           <p class="notice" id="inviteMessage" role="status"></p>
         </form>
         <p class="small">Link público do cliente: <code id="shopLinkPreview"></code></p>
+        <h3>Barbearias cadastradas</h3>
+        <div id="vendorShopList" class="grid"><p class="muted">Carregando barbearias...</p></div>
       </div>
-      <div class="panel stack">
-        <h3>Agenda</h3>
-        <div id="appointmentList" class="stack"><p class="muted">Entre para consultar os agendamentos.</p></div>
+
+      <div id="shopAdminArea" class="hidden">
+        <p id="tenantAccessMessage" class="notice" role="status"></p>
+        <nav class="tabs" role="tablist" aria-label="Administração da barbearia">
+          <button type="button" class="tab-button active" role="tab" aria-selected="true" data-tab="appointmentsPanel">Agenda</button>
+          <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="servicesPanel">Serviços</button>
+          <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="productsPanel">Produtos</button>
+          <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="ordersPanel">Pedidos</button>
+          <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="cashPanel">Caixa</button>
+        </nav>
+        <section id="appointmentsPanel" class="tab-panel">
+          <h3>Agendamentos</h3>
+          <div id="appointmentList" class="stack"><p class="muted">Carregando agenda...</p></div>
+        </section>
+        <section id="servicesPanel" class="tab-panel hidden">
+          <h3>Serviços</h3>
+          <form id="serviceForm" class="panel stack">
+            <input name="service_id" type="hidden">
+            <div class="formgrid">
+              <label>Nome<input name="name" required maxlength="120"></label>
+              <label>Preço (R$)<input name="price" type="number" min="0" step="0.01" required></label>
+              <label>Duração (minutos)<input name="duration_minutes" type="number" min="15" max="240" step="15" required></label>
+              <label class="checkbox-label"><input name="active" type="checkbox" checked> Disponível na vitrine</label>
+            </div>
+            <label>Descrição<textarea name="description" maxlength="500"></textarea></label>
+            <div class="actions"><button type="submit" id="saveService">Adicionar serviço</button><button type="button" class="secondary hidden" id="cancelServiceEdit">Cancelar edição</button><span class="notice" id="serviceMessage" role="status"></span></div>
+          </form>
+          <div id="manageServices" class="grid"></div>
+        </section>
+        <section id="productsPanel" class="tab-panel hidden">
+          <h3>Produtos</h3>
+          <form id="productForm" class="panel stack">
+            <input name="product_id" type="hidden">
+            <div class="formgrid">
+              <label>Nome<input name="name" required maxlength="120"></label>
+              <label>Preço (R$)<input name="price" type="number" min="0" step="0.01" required></label>
+              <label class="checkbox-label"><input name="active" type="checkbox" checked> Disponível na vitrine</label>
+            </div>
+            <label>Descrição<textarea name="description" maxlength="500"></textarea></label>
+            <div class="actions"><button type="submit" id="saveProduct">Adicionar produto</button><button type="button" class="secondary hidden" id="cancelProductEdit">Cancelar edição</button><span class="notice" id="productMessage" role="status"></span></div>
+          </form>
+          <div class="grid" id="manageProducts"></div>
+        </section>
+        <section id="ordersPanel" class="tab-panel hidden">
+          <h3>Pedidos e vendas</h3>
+          <form id="orderForm" class="panel stack">
+            <div class="formgrid">
+              <label>Cliente (opcional)<input name="customer_name" maxlength="100"></label>
+              <label>Telefone (opcional)<input name="customer_phone" maxlength="30"></label>
+              <label>Produto<select name="product_id" required><option value="">Selecione um produto</option></select></label>
+              <label>Quantidade<input name="quantity" type="number" min="1" max="100" value="1" required></label>
+            </div>
+            <div class="actions"><button type="button" class="secondary" id="addOrderItem">Adicionar item</button></div>
+            <div id="orderCart" class="stack"><p class="muted">Adicione produtos para montar o pedido.</p></div>
+            <div class="actions"><button type="submit" id="createOrder">Criar pedido</button><span class="notice" id="orderMessage" role="status"></span></div>
+          </form>
+          <h3>Pedidos recentes</h3>
+          <div id="orderList" class="stack"><p class="muted">Carregando pedidos...</p></div>
+        </section>
+        <section id="cashPanel" class="tab-panel hidden">
+          <h3>Caixa</h3>
+          <div class="grid">
+            <article class="card"><span class="small">Entradas do mês</span><div class="price" id="cashIncome">R$ 0,00</div></article>
+            <article class="card"><span class="small">Despesas do mês</span><div class="price" id="cashExpenses">R$ 0,00</div></article>
+            <article class="card"><span class="small">Saldo do mês</span><div class="price" id="cashBalance">R$ 0,00</div></article>
+          </div>
+          <form id="cashForm" class="panel stack">
+            <div class="formgrid">
+              <label>Tipo<select name="kind" required><option value="income">Entrada</option><option value="expense">Despesa</option></select></label>
+              <label>Categoria<input name="category" required maxlength="60" placeholder="Ex.: compra de materiais"></label>
+              <label>Valor (R$)<input name="amount" type="number" min="0.01" step="0.01" required></label>
+              <label>Data<input name="occurred_on" type="date" required></label>
+            </div>
+            <label>Descrição<input name="description" maxlength="240"></label>
+            <div class="actions"><button type="submit">Registrar movimentação</button><span class="notice" id="cashMessage" role="status"></span></div>
+          </form>
+          <h3>Movimentações</h3>
+          <div id="cashList" class="stack"><p class="muted">Carregando movimentações...</p></div>
+        </section>
       </div>
     </div></section>
   </main>
-  <footer><div class="wrap row"><span>© Barbearias</span><span>Estilo clássico, cuidado contemporâneo.</span></div></footer>
+  <footer><div class="wrap row"><span>© <span id="footerBrand">Barbearias</span></span><span>Estilo clássico, cuidado contemporâneo.</span></div></footer>
   <dialog id="loginDialog">
-    <div class="row"><h2>Acesso da barbearia</h2><button class="secondary" id="closeLogin" aria-label="Fechar">Fechar</button></div>
-    <p class="muted">Entre com a conta que recebeu por convite para cadastrar produtos e preços.</p>
+    <div class="row"><h2>Acesso administrativo</h2><button class="secondary" id="closeLogin" aria-label="Fechar">Fechar</button></div>
+    <p class="muted">Entre com sua conta de administrador da plataforma ou com a conta da sua barbearia.</p>
     <form id="loginForm" class="stack">
       <label>E-mail<input name="email" type="email" autocomplete="email" required></label>
       <label>Senha<input name="password" type="password" autocomplete="current-password" required minlength="6"></label>
