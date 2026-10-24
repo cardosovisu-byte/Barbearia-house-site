@@ -14,6 +14,7 @@ export function initServices() {
   const notice = document.querySelector("#serviceMessage");
   const saveButton = document.querySelector("#saveService");
   const cancelButton = document.querySelector("#cancelServiceEdit");
+  const templates = document.querySelector("#serviceTemplates");
   let shopId = null;
   let activeSession = null;
 
@@ -112,6 +113,16 @@ export function initServices() {
     saveButton.textContent = "Adicionar serviço";
     cancelButton.classList.add("hidden");
     setNotice("");
+  });
+  templates.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-service-template]");
+    if (!button) return;
+    form.elements.service_id.value = "";
+    form.elements.name.value = button.dataset.serviceTemplate;
+    saveButton.textContent = "Adicionar serviço";
+    cancelButton.classList.add("hidden");
+    form.scrollIntoView({ behavior: "smooth" });
+    form.elements.price.focus();
   });
   window.addEventListener("auth-state", (event) => {
     activeSession = event.detail.session;

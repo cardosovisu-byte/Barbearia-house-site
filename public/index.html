@@ -79,7 +79,7 @@
         <p id="tenantAccessMessage" class="notice" role="status"></p>
         <nav class="tabs" role="tablist" aria-label="Administração da barbearia">
           <button type="button" class="tab-button active" role="tab" aria-selected="true" data-tab="appointmentsPanel">Agenda</button>
-          <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="servicesPanel">Serviços</button>
+          <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="servicesPanel">Personalização</button>
           <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="productsPanel">Produtos</button>
           <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="ordersPanel">Pedidos</button>
           <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="cashPanel">Caixa</button>
@@ -89,7 +89,13 @@
           <div id="appointmentList" class="stack"><p class="muted">Carregando agenda...</p></div>
         </section>
         <section id="servicesPanel" class="tab-panel hidden">
-          <h3>Serviços</h3>
+          <h3>Personalização dos serviços</h3>
+          <p class="lead">Escolha um modelo para começar ou cadastre um serviço com outro nome. Defina preço e duração antes de salvar.</p>
+          <div id="serviceTemplates" class="actions" aria-label="Modelos de serviços">
+            <button type="button" class="secondary" data-service-template="Corte de cabelo">Corte de cabelo</button>
+            <button type="button" class="secondary" data-service-template="Corte de cabelo e barba">Corte de cabelo e barba</button>
+            <button type="button" class="secondary" data-service-template="Platina">Platina</button>
+          </div>
           <form id="serviceForm" class="panel stack">
             <input name="service_id" type="hidden">
             <div class="formgrid">
