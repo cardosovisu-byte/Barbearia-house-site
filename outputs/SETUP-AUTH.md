@@ -6,7 +6,7 @@ Este projeto usa uma chave pública Publishable no navegador e Row Level Securit
 
 1. Crie um projeto Supabase.
 2. Copie `supabase-config.js.example` para `supabase-config.js` e preencha Project URL, chave Publishable e o slug da barbearia.
-3. No SQL Editor, execute nesta ordem: `supabase/schema.sql`, `supabase/booking.sql` e `supabase/admin.sql`.
+3. No SQL Editor, execute nesta ordem: `supabase/schema.sql`, `supabase/booking.sql`, `supabase/admin.sql` e `supabase/tenant-settings.sql`.
 4. Em Authentication → Users, crie/convide a sua conta de administrador da plataforma. Use o UUID dessa conta para conceder o acesso de vendedor:
 
    ```sql
@@ -18,6 +18,12 @@ Este projeto usa uma chave pública Publishable no navegador e Row Level Securit
 5. Configure SMTP próprio em Supabase Auth e adicione o domínio HTTPS do site às URLs permitidas.
 6. Em Environment → Environment Variables no Render, configure `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY`. Configure o mesmo Project URL no runtime seguro da Edge Function.
 7. Publique o site; teste login, isolamento entre contas, cadastro de produtos/serviços, pedidos, caixa e agendamento com contas de teste antes de usar dados reais.
+
+## WhatsApp da barbearia
+
+Depois de criar a barbearia e entrar com a conta que tem acesso a ela, a seção **Configurações da barbearia** aparece no painel. Informe o WhatsApp comercial com código do país e DDD, por exemplo `55` + DDD + número, e salve. Para removê-lo, deixe o campo vazio e salve. A migração `tenant-settings.sql` precisa estar aplicada para habilitar o campo e o botão de pedido.
+
+O formulário público registra a solicitação no banco como pendente e oferece um link para abrir a conversa do WhatsApp com os dados do pedido. A pessoa ainda precisa tocar em enviar no WhatsApp; o horário não é confirmado até a equipe responder.
 
 ## Acesso de clientes/barbearias
 
